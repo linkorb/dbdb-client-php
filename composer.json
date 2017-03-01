@@ -1,0 +1,27 @@
+{
+  "name": "linkorb/dbdb-client-php",
+  "description": "DbDb client",
+  "homepage": "https://github.com/linkorb/skyline",
+  "keywords": ["dbdb", "linkorb"],
+  "type": "library",
+  "authors": [
+    {
+      "name": "LinkORB Engineering",
+      "email": "engineering@linkorb.com",
+      "role": "Development"
+    }
+  ],
+  "require": {
+    "symfony/console": "~2.7",
+    "symfony/yaml": "~2.7",
+    "symfony/process": "~2.7",
+    "symfony/dotenv": "3.3.x-dev",
+    "guzzlehttp/guzzle": "~6.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "DbDb\\Client\\": "src/"
+    }
+  },
+  "license": "MIT"
+}

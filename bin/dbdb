@@ -1,0 +1,28 @@
+#!/usr/bin/env php
+<?php
+
+use Symfony\Component\Console\Application;
+use Symfony\Component\Dotenv\Dotenv;
+
+$loader = __DIR__ . '/../vendor/autoload.php';
+
+if (!file_exists($loader)) {
+    $loader = __DIR__ . '/../../../autoload.php';
+}
+
+if (!file_exists($loader)) {
+    die(
+        'You must set up the project dependencies, run the following commands:' . PHP_EOL .
+        'curl -s http://getcomposer.org/installer | php' . PHP_EOL .
+        'php composer.phar install' . PHP_EOL
+    );
+}
+
+require $loader;
+
+(new Dotenv())->load(__DIR__.'/../.env');
+
+$application = new Application('DbDb client', '1.0.0');
+$application->setCatchExceptions(true);
+$application->add(new \DbDb\Client\Command\PullCommand());
+$application->run();
