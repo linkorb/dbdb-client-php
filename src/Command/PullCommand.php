@@ -70,14 +70,23 @@ class PullCommand extends Command
         $tmpFilename = '/tmp/' . $dbName . '.sql.gz';
         $output->writeLn("Downloading snapshot #" . $snapshot['id'] . " - " . $snapshot['name']  . " to " . $tmpFilename);
 
+        $lastStamp = time();
         $res = $client->request('GET', $url . '/api/v1/snapshots/' . $snapshot['id'] . '/download', [
-            'auth' => [$username, $password]
+            'auth' => [$username, $password],
+            'sink' => $tmpFilename,
+            'progress' => function ($dl_total_size, $dl_size_so_far, $ul_total_size, $ul_size_so_far) use (&$lastStamp){
+                if ($lastStamp!=time()) {
+                    $p = '?';
+                    if ($dl_total_size>0) {
+                        $p = round($dl_size_so_far / $dl_total_size * 100, 1);
+                    }
+                    echo $dl_total_size . '/' . $dl_size_so_far . '=' . $p . "%\n";
+                    $lastStamp = time();
+                }
+            }
         ]);
-        $data = $res->getBody();
-        file_put_contents($tmpFilename, $data);
-
-
-        $output->writeLn("Ensuring db");
+        //$data = $res->getBody();
+        //file_put_contents($tmpFilename, $data);
 
         $cmd = 'mysql -e "create database ' . $dbName . '"';
 
@@ -86,14 +95,14 @@ class PullCommand extends Command
         $process->setIdleTimeout($timeout);
         $process->run();
         if ($process->isSuccessful()) {
-            $output->writeLn("   Created");
+            $output->writeLn("Created $dbName");
         } else {
-            $output->writeLn("   Already exists");
+            $output->writeLn("$dbName already exists");
         }
 
 
         $cmd = 'gunzip < ' . $tmpFilename . ' | mysql ' . $dbName;
-        $output->writeLn("Loading data");
+        $output->writeLn("Importing data");
 
         $process = new Process($cmd);
         $process->setTimeout($timeout);
