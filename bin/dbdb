@@ -28,4 +28,5 @@ $application->add(new \DbDb\Client\Command\PullCommand());
 $application->add(new \DbDb\Client\Command\SnapshotFullCommand());
 $application->add(new \DbDb\Client\Command\DbPropertyCommand());
 $application->add(new \DbDb\Client\Command\DbShowCommand());
+$application->add(new \DbDb\Client\Command\DbSearchCommand());
 $application->run();
