@@ -26,4 +26,7 @@ $application = new Application('DbDb client', '1.0.0');
 $application->setCatchExceptions(true);
 $application->add(new \DbDb\Client\Command\PullCommand());
 $application->add(new \DbDb\Client\Command\SnapshotFullCommand());
+$application->add(new \DbDb\Client\Command\DbPropertyCommand());
+$application->add(new \DbDb\Client\Command\DbShowCommand());
+$application->add(new \DbDb\Client\Command\DbSearchCommand());
 $application->run();
