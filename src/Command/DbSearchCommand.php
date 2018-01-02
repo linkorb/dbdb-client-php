@@ -2,12 +2,12 @@
 
 namespace DbDb\Client\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Helper\Table;
 
-class DbSearchCommand extends Command
+class DbSearchCommand extends AbstractDbCommand
 {
     protected function configure()
     {
@@ -25,19 +25,30 @@ class DbSearchCommand extends Command
     {
         $keyword = $input->getArgument('keyword');
 
-        $url = getenv('DBDB_URL');
-        $username = getenv('DBDB_USERNAME');
-        $password = getenv('DBDB_PASSWORD');
+        $this->apiUrl = '/api/v1/dbs/search/'.$keyword;
+        $res = parent::execute($input, $output);
 
-        if (!$url || !$username || !$password) {
-            throw new RuntimeException('Configuration incomplete');
+        $result = json_decode($res->getBody());
+
+        if ($result) {
+            $table = new Table($output);
+            $header = array();
+            foreach ($result[0] as $key => $value) {
+                $header[] = $key;
+            }
+            $table->setHeaders($header);
+
+            foreach ($result as $row) {
+                $rowArray = array();
+                foreach ($row as $key => $val) {
+                    $rowArray[] = $val;
+                }
+                $table->addRow($rowArray);
+            }
+
+            $table->render();
+        } else {
+            echo $res->getBody();
         }
-
-        $client = new \GuzzleHttp\Client();
-        $res = $client->request('GET', $url.'/api/v1/dbs/search/'.$keyword, [
-             'auth' => [$username, $password],
-        ]);
-
-        echo $res->getBody();
     }
 }
