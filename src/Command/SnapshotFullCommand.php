@@ -2,12 +2,11 @@
 
 namespace DbDb\Client\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class SnapshotFullCommand extends Command
+class SnapshotFullCommand extends AbstractDbCommand
 {
     protected function configure()
     {
@@ -25,18 +24,8 @@ class SnapshotFullCommand extends Command
     {
         $dbname = $input->getArgument('dbname');
 
-        $url = getenv('DBDB_URL');
-        $username = getenv('DBDB_USERNAME');
-        $password = getenv('DBDB_PASSWORD');
-
-        if (!$url || !$username || !$password) {
-            throw new RuntimeException('Configuration incomplete');
-        }
-
-        $client = new \GuzzleHttp\Client();
-        $res = $client->request('GET', $url.'/api/v1/snapshots/'.$dbname, [
-             'auth' => [$username, $password],
-        ]);
+        $this->apiUrl = '/api/v1/snapshots/'.$dbname;
+        $res = parent::execute($input, $output);
 
         echo $res->getBody();
     }

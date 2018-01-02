@@ -2,12 +2,11 @@
 
 namespace DbDb\Client\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class DbPropertyCommand extends Command
+class DbPropertyCommand extends AbstractDbCommand
 {
     protected function configure()
     {
@@ -37,18 +36,8 @@ class DbPropertyCommand extends Command
         $key = $input->getArgument('key');
         $value = $input->getArgument('value');
 
-        $url = getenv('DBDB_URL');
-        $username = getenv('DBDB_USERNAME');
-        $password = getenv('DBDB_PASSWORD');
-
-        if (!$url || !$username || !$password) {
-            throw new RuntimeException('Configuration incomplete');
-        }
-
-        $client = new \GuzzleHttp\Client();
-        $res = $client->request('GET', $url.'/api/v1/dbs/'.$dbname.'/property/'.$key.'/'.$value, [
-             'auth' => [$username, $password],
-        ]);
+        $this->apiUrl = '/api/v1/dbs/'.$dbname.'/property/'.$key.'/'.$value;
+        $res = parent::execute($input, $output);
 
         echo $res->getBody();
     }
