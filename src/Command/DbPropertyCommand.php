@@ -46,7 +46,8 @@ class DbPropertyCommand extends Command
         }
 
         $client = new \GuzzleHttp\Client();
-        $res = $client->request('GET', $url.'/api/v1/dbs/'.$dbname.'/property/'.$key.'/'.$value, [
+        $url = $url.'/api/v1/dbs/'.$dbname.'/property/'.$key.'/'.$value;
+        $res = $client->request('GET', $url, [
              'auth' => [$username, $password],
         ]);
 

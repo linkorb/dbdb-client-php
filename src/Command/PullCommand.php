@@ -52,7 +52,8 @@ class PullCommand extends Command
 
 
         $client = new \GuzzleHttp\Client();
-        $res = $client->request('GET', $url . '/api/v1/dbs/' . $dbName . '/snapshots', [
+        $fullUrl = $url . '/api/v1/dbs/' . $dbName . '/snapshots';
+        $res = $client->request('GET', $fullUrl, [
             'auth' => [$username, $password]
         ]);
         $json = $res->getBody();
@@ -71,7 +72,10 @@ class PullCommand extends Command
         $output->writeLn("Downloading snapshot #" . $snapshot['id'] . " - " . $snapshot['name']  . " to " . $tmpFilename);
 
         $lastStamp = time();
-        $res = $client->request('GET', $url . '/api/v1/snapshots/' . $snapshot['id'] . '/download', [
+
+        $fullUrl=  $url . '/api/v1/snapshots/' . $snapshot['id'] . '/download';
+
+        $res = $client->request('GET', $fullUrl, [
             'auth' => [$username, $password],
             'sink' => $tmpFilename,
             'progress' => function ($dl_total_size, $dl_size_so_far, $ul_total_size, $ul_size_so_far) use (&$lastStamp){
