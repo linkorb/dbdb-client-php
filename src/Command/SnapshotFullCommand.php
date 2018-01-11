@@ -34,7 +34,7 @@ class SnapshotFullCommand extends Command
         }
 
         $client = new \GuzzleHttp\Client();
-        $res = $client->request('GET', $url.'/api/v1/snapshots/'.$dbname, [
+        $res = $client->request('GET', $url.'/api/v1/dbs/'.$dbname.'/snapshot', [
              'auth' => [$username, $password],
         ]);
 
