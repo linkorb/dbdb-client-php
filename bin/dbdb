@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 
+use Envoi\Envoi;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Dotenv\Dotenv;
 
@@ -20,7 +21,10 @@ if (!file_exists($loader)) {
 
 require $loader;
 
-(new Dotenv())->load(__DIR__.'/../.env');
+// .env validate it.
+$envFilename = __DIR__.'/../.env';
+$envMetaFile = __DIR__.'/../.env.yaml';
+Envoi::init($envFilename, $envMetaFile);
 
 $application = new Application('DbDb client', '1.0.0');
 $application->setCatchExceptions(true);
