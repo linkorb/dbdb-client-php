@@ -26,9 +26,14 @@ class PullCommand extends Command
             ->setName('pull')
             ->setDescription('Pull database from dbdb and load localy')
             ->addArgument(
-                'dbname',
+                'source_dbname',
+                InputArgument::REQUIRED,
+                'Source DbName'
+            )
+            ->addArgument(
+                'target_dbname',
                 InputArgument::OPTIONAL,
-                'DbName'
+                'Target DbName'
             )
         ;
     }
@@ -40,9 +45,10 @@ class PullCommand extends Command
     {
         $timeout = 60*30;
 
-        $dbName = $input->getArgument('dbname');
+        $sourceDbName = $input->getArgument('source_dbname');
+        $targetDbName = $input->getArgument('target_dbname') ?? $sourceDbName;
 
-        $output->writeLn("Loading db: " . $dbName);
+        $output->writeLn("Loading db: " . $sourceDbName);
         $url = getenv('DBDB_URL');
         $username = getenv('DBDB_USERNAME');
         $password = getenv('DBDB_PASSWORD');
@@ -52,7 +58,7 @@ class PullCommand extends Command
 
 
         $client = new \GuzzleHttp\Client();
-        $fullUrl = $url . '/api/v1/dbs/' . $dbName . '/snapshots';
+        $fullUrl = $url . '/api/v1/dbs/' . $sourceDbName . '/snapshots';
         $res = $client->request('GET', $fullUrl, [
             'auth' => [$username, $password]
         ]);
@@ -68,7 +74,7 @@ class PullCommand extends Command
         if (!$snapshot) {
             throw new RuntimeException("Can't determine latest snapshot");
         }
-        $tmpFilename = '/tmp/' . $dbName . '.sql.gz';
+        $tmpFilename = '/tmp/' . $sourceDbName . '.sql.gz';
         $output->writeLn("Downloading snapshot #" . $snapshot['id'] . " - " . $snapshot['name']  . " to " . $tmpFilename);
 
         $lastStamp = time();
@@ -92,20 +98,20 @@ class PullCommand extends Command
         //$data = $res->getBody();
         //file_put_contents($tmpFilename, $data);
 
-        $cmd = 'mysql -e "create database ' . $dbName . '"';
+        $cmd = 'mysql -e "create database ' . $targetDbName . '"';
 
         $process = new Process($cmd);
         $process->setTimeout($timeout);
         $process->setIdleTimeout($timeout);
         $process->run();
         if ($process->isSuccessful()) {
-            $output->writeLn("Created $dbName");
+            $output->writeLn("Created $targetDbName");
         } else {
-            $output->writeLn("$dbName already exists");
+            $output->writeLn("$targetDbName already exists");
         }
 
 
-        $cmd = 'gunzip < ' . $tmpFilename . ' | mysql ' . $dbName;
+        $cmd = 'gunzip < ' . $tmpFilename . ' | mysql ' . $targetDbName;
         $output->writeLn("Importing data");
 
         $process = new Process($cmd);
