@@ -13,7 +13,7 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 use RuntimeException;
 use PDO;
 
-class PullCommand extends Command
+class PullDbCommand extends Command
 {
     /**
      * {@inheritdoc}
@@ -23,7 +23,7 @@ class PullCommand extends Command
         $this->ignoreValidationErrors();
 
         $this
-            ->setName('pull')
+            ->setName('pull:db')
             ->setDescription('Pull database from dbdb and load localy')
             ->addArgument(
                 'source_dbname',
@@ -98,30 +98,38 @@ class PullCommand extends Command
         //$data = $res->getBody();
         //file_put_contents($tmpFilename, $data);
 
-        $cmd = 'mysql -e "create database ' . $targetDbName . '"';
+        $cmd = 'mysql -e "CREATE DATABASE IF NOT EXISTS ' . $targetDbName . '"';
+        exec($cmd, $stdout, $return_var);
+        print_r($stdout);
 
-        $process = new Process($cmd);
-        $process->setTimeout($timeout);
-        $process->setIdleTimeout($timeout);
-        $process->run();
-        if ($process->isSuccessful()) {
-            $output->writeLn("Created $targetDbName");
-        } else {
-            $output->writeLn("$targetDbName already exists");
-        }
+        // $process = new Process([$cmd]);
+        // $process->setTimeout($timeout);
+        // $process->setIdleTimeout($timeout);
+        // $process->run();
+        // if ($process->isSuccessful()) {
+        //     $output->writeLn("Created $targetDbName");
+        // } else {
+        //     $output->writeLn("$targetDbName already exists");
+        // }
 
 
-        $cmd = 'gunzip < ' . $tmpFilename . ' | mysql ' . $targetDbName;
+        $cmd = 'zcat ' . $tmpFilename . ' | grep -v "\!99999" | mysql ' . $targetDbName;
         $output->writeLn("Importing data");
+        echo $cmd . PHP_EOL;
 
-        $process = new Process($cmd);
-        $process->setTimeout($timeout);
-        $process->setIdleTimeout($timeout);
-        $process->run();
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
+        @exec($cmd, $stdout, $return_var);
+        print_r($stdout);
+
+        // TODO: restore use of process component - currently broken
+        // $process = new Process([$cmd]);
+        // $process->setTimeout($timeout);
+        // $process->setIdleTimeout($timeout);
+        // $process->run();
+        // if (!$process->isSuccessful()) {
+        //     throw new ProcessFailedException($process);
+        // }
+
         $output->writeLn("Done");
-
+        return Command::SUCCESS;
     }
 }
