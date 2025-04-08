@@ -24,7 +24,13 @@ require $loader;
 // .env validate it.
 $envFilename = __DIR__.'/../.env';
 $envMetaFile = __DIR__.'/../.env.yaml';
-Envoi::init($envFilename, $envMetaFile);
+// Envoi::init($envFilename, $envMetaFile);
+
+// Load .env file and PUT into to environment variables
+
+$dotenv = new Dotenv();
+$dotenv->usePutenv(true);
+$dotenv->load($envFilename);
 
 $application = new Application('DbDb client', '1.0.0');
 $application->setCatchExceptions(true);
